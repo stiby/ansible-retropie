@@ -1,0 +1,28 @@
+---
+- name: upgrade packages
+  apt: upgrade=dist update_cache=yes
+  become: yes
+
+- name: install git
+  apt: pkg=git state=present
+  become: yes
+
+- name: install make
+  apt: pkg=make state=present
+  become: yes
+
+- name: Git clone Retro-Pie
+  git: repo=https://github.com/petrockblog/Xarcade2Jstick dest=/home/pi/Xarcade2Jstick version=master
+
+- name: Run 'install' target as root
+  make:
+    chdir: /home/pi/Xarcade2Jstick
+    target: install
+  become: yes
+
+- name: Run 'installservice' target as root
+  make:
+    chdir: /home/pi/Xarcade2Jstick
+    target: installservice
+  become: yes
+

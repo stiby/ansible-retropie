@@ -1,0 +1,4 @@
+---
+- rom_root: "/home/pi/RetroPie/roms"
+- rom_mounts :
+  - { name: "{{ rom_root }}/snes", src: "192.168.1.254:/data/Hyperspin/Hyperspin/Games/Super Nintendo Entertainment System/Emulators/snes9x-1.52-win32/Roms" }

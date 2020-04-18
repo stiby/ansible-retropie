@@ -1,0 +1,31 @@
+---
+# Vagrant host configuration
+- hosts: vagrant
+  remote_user: vagrant
+  become: True
+  vars:
+    ansible_ssh_private_key_file: ~/.vagrant.d/insecure_private_key
+  roles:
+    - debian-setup
+
+# Installation of the Retropie Software (Generally use a pre-built Pi image)
+- hosts: install
+  remote_user: pi
+  become: True
+  vars:
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa
+  roles:
+    - retropie-install
+#    - retropie-kioskmode   Broken, needs fixing, not a major requirement
+
+# Configure a retropie install including mapping roms, controllers, controller drivers etc
+- hosts: configure
+  remote_user: pi
+  become: True
+  vars_files:
+    - vars/roms.yml
+  vars:
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa
+  roles:
+    - retropie-mount-roms
+    - retropie-xarcade

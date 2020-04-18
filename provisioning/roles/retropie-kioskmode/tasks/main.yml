@@ -1,0 +1,42 @@
+---
+- name: xsessions for pi user
+  file:
+    path: /usr/share/xsessions
+    state: directory
+  with_items:
+    - "/usr/share/xsessions"
+    - "/var/lib/AccountsService/users/"
+    - "/var/lib/AccountsService/users/"
+    - "/usr/share/gnome-shell/modes"
+
+- name: copy configuration files
+  copy:
+    dest: "{{ item.dest }}"
+    src: "{{ item.src }}"
+  with_items:
+    - { src: "files/pi-session.desktop", dest: "/usr/share/xsessions/pi-session.desktop" }
+    - { src: "files/pi-shell.desktop", dest: "/usr/share/applications/pi-shell.desktop" }
+#    - { src: "files/pi-session.desktop", dest: "/etc/X11/sessions/pi-session.desktop" }
+    - { src: "files/pi-session.session", dest: "/usr/share/gnome-session/sessions/pi-session.session" }
+    - { src: "files/pi.json", dest: "/usr/share/gnome-shell/modes/pi.json" }
+
+- name: update user session
+  lineinfile:
+    path:  /var/lib/AccountsService/users/pi
+    regexp: "{{ item.regex }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { regex: "XSession=", line: "XSession=pi-session" }
+
+# /home/pi/.config/autostart to start emulationstation - can I add that to the retropie install?
+#Should this happen to you, follow these steps to change the /etc/X11/Xsession.d/20x11-common_process-args file:
+#
+#    Change STARTUP_FULL_PATH=$(/usr/bin/which "$1"|| true) to STARTUP_FULL_PATH=$(/usr/bin/which $1 || true)
+#
+#    Change STARTUP="$1" to STARTUP=$1
+
+
+- name: restart the desktop
+  command: service gdm3 restart
+  become: true

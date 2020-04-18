@@ -1,0 +1,18 @@
+# VM host and if using a raspberry-pi with a retropie image just using the hostname.
+#
+vm-retropie ansible_ssh_host=127.0.0.1 ansible_ssh_port=2222
+# retropie
+
+# Hosts that require the OS to be setup - Installs Gnome desktop as a starting point
+[vagrant]
+vm-retropie
+
+# Hosts that require RetroPie installing - The Kiosk Role will fail on a Rasbian OS, maybe replace Gnome on Debian build
+# to Pixel to be compatible with Raspbian OS
+[install]
+vm-retropie
+
+# Hosts that require configuring - Tested on both Debian and RetroPie
+[configure]
+vm-retropie
+retropie

@@ -1,0 +1,97 @@
+---
+- name: Ensure NTP is installed.
+  apt: name=ntp state=present
+
+- name: Ensure NTP is running.
+  service: name=ntp state=started enabled=yes
+
+- name: Check sudo group
+  group: name=pi state=present
+
+- name: Allow 'pi' group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%pi'
+    line: '%pi ALL=(ALL) NOPASSWD: ALL'
+    validate: visudo -cf %s
+
+- name: Add pi user and add it to sudo
+  user:
+    name: pi
+    password: "{{ 'raspberry' | password_hash('sha512') }}"
+    groups: pi
+    append: yes
+    createhome: yes
+    state: present
+
+- name: Set authorized key for user ubuntu copying it from current user
+  authorized_key:
+    user: pi
+    state: present
+    key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+
+- name: Install desktop needed for emulation station
+  command:
+    cmd: tasksel install desktop gnome-desktop
+
+- name: Auto log-into pi user
+  ini_file:
+    path: /etc/gdm3/daemon.conf
+    section: daemon
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    state: present
+  with_items:
+    - { option: "AutomaticLoginEnable", value: "true" }
+    - { option: "AutomaticLogin", value: "pi" }
+
+- name: Copy desktop background image
+  copy:
+    src: files/retropie.png
+    dest: /usr/share/images/desktop-base/retropie.png
+    mode: '0644'
+    owner: root
+    group: root
+  become: true
+
+- name: Create folders for the background configuration
+  file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: '0655'
+    state: directory
+  with_items:
+    - /etc/dconf/profile
+    - /etc/dconf/db/local.d/locks/
+  become: true
+
+- name: Copy gnome configuration files over
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - { src: "files/user", dest: "/etc/dconf/profile/user" }
+    - { src: "files/background", dest: "/etc/dconf/db/local.d/locks/background" }
+    - { src: "files/00-background", dest: "/etc/dconf/db/local.d/00-background" }
+    - { src: "files/00-power", dest: "/etc/dconf/db/local.d/00-power" }
+    - { src: "files/00-session", dest: "/etc/dconf/db/local.d/00-session" }
+  become: true
+
+- name: Update dconf
+  command: dconf update
+  become: true
+
+- name: restart machine
+  shell: shutdown -r now "Ansible updates triggered"
+  async: 1
+  poll: 0
+  ignore_errors: true
+
+- name: waiting for server to come back
+  local_action: wait_for host={{ inventory_hostname }} state=started delay=4 timeout=60
+  become: false

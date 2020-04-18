@@ -1,0 +1,4 @@
+The raspberrypi setup in a role - clear out scripts folder
+The rom sync in a role - clear out scripts folder
+Replace Gnome with Pixel in Debian to better match raspbian OS (maybe see how retropie makes a kiosk mode)
+[Low Priority] Fix kisok mode for gnome

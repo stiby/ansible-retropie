@@ -1,0 +1,12 @@
+[org/gnome/settings-daemon/plugins/power]
+# Prevent Sleeping
+sleep-inactive-ac-timeout = 0
+sleep-inactive-battery-timeout = 0
+sleep-inactive-ac-type = 'nothing'
+sleep-inactive-battery-type = 'nothing'
+
+# Enable screen dimming
+idle-dim=true
+
+# Set brightness after dimming
+idle-brightness=30

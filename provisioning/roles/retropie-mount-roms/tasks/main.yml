@@ -1,0 +1,21 @@
+---
+- name: Install required packages
+  apt:
+    name: nfs-common
+    state: present
+
+- name: Mount Roms
+  mount:
+    name: "{{ item.name }}"
+    src: "{{ item.src }}"
+    fstype: nfs
+    state: mounted
+  with_items: "{{ rom_mounts }}"
+
+- name: Kill Emulation Station
+  command: "killall emulationstation"
+  ignore_errors: yes
+
+- name: Start Emulation Station
+  shell: "(nohup emulationstation &)"
+  become: false

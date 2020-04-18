@@ -56,7 +56,10 @@ Vagrant.configure("2") do |config|
     vb.name = "retropie"
     vb.linked_clone = true
 
-    # Customize the amount of memory on the VM:
+    # X-Arcade Configuration to link the hosts USB to the attached device
+    vb.customize ["modifyvm", :id, "--usb", "on"]
+    vb.customize ['usbfilter', 'add', '0', '--target', :id, '--name', 'XGaming XGaming [0100]', '--vendorid', '0xaa55', '--productid', '0x0101']
+
     vb.memory = "1024"
     vb.cpus = 2
     vb.customize ["modifyvm", :id, "--vram", "128"]
@@ -72,10 +75,14 @@ Vagrant.configure("2") do |config|
 
   # Provisioning configuration for Ansible.
   config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "playbook.yml"
-    if File.file?(".vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory")
-      ansible.inventory_path = ".vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory"
-    end
+    ansible.playbook = "provisioning/playbook.yml"
+    ansible.inventory_path = "provisioning/inventory"
+    ansible.force_remote_user = false
+    ansible.limit = "vagrant"
+    # ansible.verbose = "vvvv"
+    #if File.file?(".vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory")
+    #  ansible.inventory_path = ".vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory"
+    #end
     # Cygwin Bug 1278 - OpenSSH controlMaster connections don't work
     ansible.raw_ssh_args = ["-o ControlMaster=no"]
   end
